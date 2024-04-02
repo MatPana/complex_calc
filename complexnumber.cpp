@@ -45,7 +45,7 @@ ComplexNumber ComplexNumber::root() const {
     return ComplexNumber(newReal, newImaginary);
 }
 
-ComplexNumber ComplexNumber::inverse() {
+ComplexNumber ComplexNumber::inverse() const {
     double denominator = real * real + imaginary * imaginary;
     if (denominator == 0) {
         throw std::invalid_argument("Division by zero!");

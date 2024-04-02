@@ -22,7 +22,7 @@ public:
 
     ComplexNumber root() const;
 
-    ComplexNumber inverse();
+    ComplexNumber inverse() const;
 
     ComplexNumber conjugate() const;
 
