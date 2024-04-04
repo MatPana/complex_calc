@@ -169,11 +169,10 @@ void Calculator::clearDisplay()
     display_i->setText(QString::number(0));
 }
 
-ComplexNumber Calculator::readNumber()
-{
-    double a = display->text().toDouble();
-    double b = display_i->text().toDouble();
-    return ComplexNumber(a, b);
+ComplexNumber Calculator::readNumber() {
+    double real = std::stod(display->text().toStdString());
+    double imaginary = std::stod(display_i->text().toStdString());
+    return ComplexNumber(real, imaginary);
 }
 
 void Calculator::updateValue()
@@ -200,19 +199,17 @@ void Calculator::digitClicked()
     disp->setText(operand + QString::number(digitValue));
 }
 
-void Calculator::changeSignClicked()
-{
+void Calculator::changeSignClicked() {
     QLineEdit *disp = getActiveDisplay();
+    std::string text = disp->text().toStdString();
 
-    QString text = disp->text();
-    double value = text.toDouble();
-
-    if (value > 0.0) {
-        text.prepend(tr("-"));
-    } else if (value < 0.0) {
-        text.remove(0, 1);
+    if (text[0] == '-') {
+        text.erase(0, 1);
+    } else {
+        text.insert(0, "-");
     }
-    disp->setText(text);
+
+    disp->setText(QString::fromStdString(text));
 }
 
 void Calculator::pointClicked()

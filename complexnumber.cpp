@@ -7,6 +7,12 @@ ComplexNumber::ComplexNumber(double a, double b) : real(a), imaginary(b) {}
 
 ComplexNumber::~ComplexNumber() {}
 
+template <typename Operation>
+ComplexNumber performOperation(const ComplexNumber& a, const ComplexNumber& b) {
+    Operation op;
+    return (a.*op)(b);
+}
+
 ComplexNumber ComplexNumber::add(const ComplexNumber& other) const {
     return ComplexNumber(real + other.real, imaginary + other.imaginary);
 }
