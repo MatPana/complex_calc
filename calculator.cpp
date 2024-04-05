@@ -16,16 +16,25 @@ Calculator::Calculator(QWidget *parent)
     realPart(true),
     operation("none")
 {
+    /**
+     * @brief Constructor for the Calculator class.
+     * @param parent The parent widget of the calculator.
+     */
+    // Create calculator memory object
     CalcMemory calcMemory;
+
+    // Set color palette.
     palette_active.setColor(QPalette::Base,Qt::green);
     palette_inactive.setColor(QPalette::Base,Qt::white);
 
+    // Display to be used for real part of the number.
     display = new QLineEdit("0");
 
     display->setReadOnly(true);
     display->setAlignment(Qt::AlignRight);
     display->setMaxLength(15);
 
+    // Display for imaginary part of the number.
     QFont font = display->font();
     font.setPointSize(font.pointSize() + 8);
     display->setFont(font);
@@ -45,6 +54,7 @@ Calculator::Calculator(QWidget *parent)
     chart = new QChart;
 
 
+    // Pointers to buttons executing calculator functions.
     for (int i = 0; i < NumDigitButtons; ++i)
         digitButtons[i] = createButton(QString::number(i), &Calculator::digitClicked);
 
@@ -77,6 +87,7 @@ Calculator::Calculator(QWidget *parent)
 
     Button *equalButton = createButton(tr("="), &Calculator::equals);
 
+    // GUI setup.
     mainLayout = new QGridLayout;
 
     mainLayout->setSizeConstraint(QLayout::SetFixedSize);
@@ -119,6 +130,7 @@ Calculator::Calculator(QWidget *parent)
     mainLayout->addWidget(plusButton, 6, 4);
 
 
+    // Chart for plotting the results.
     chartView->setChart(chart);
     mainLayout->addWidget(chartView, 0, 7, 7, 5);
     chartView->setMinimumSize(QSize(400, 300));
@@ -128,6 +140,11 @@ Calculator::Calculator(QWidget *parent)
     setWindowTitle(tr("Calculator"));
 }
 
+/**
+ * @brief Sets the calculator to real number mode.
+ *
+ * Starts inputing real part of the number.
+ */
 void Calculator::realClicked()
 {
     realPart = true;
@@ -137,6 +154,11 @@ void Calculator::realClicked()
 \
 }
 
+/**
+ * @brief Sets the calculator to imaginary number mode.
+ *
+ * Starts inputing imaginary part of the number.
+ */
 void Calculator::imgClicked()
 {
     realPart = false;
@@ -145,6 +167,11 @@ void Calculator::imgClicked()
     display_i->setPalette(palette_active);
 }
 
+/**
+ * @brief Get the currently active display.
+ *
+ * @return A pointer to the currently active `QLineEdit` object.
+ */
 QLineEdit* Calculator::getActiveDisplay()
 {
     if (realPart) {
@@ -154,6 +181,11 @@ QLineEdit* Calculator::getActiveDisplay()
     }
 }
 
+/**
+ * @brief Updates the calculator displays..
+ *
+ * @param a - complex number to be displayed.
+ */
 void Calculator::displayNumber(ComplexNumber a)
 {
     double real = a.getReal();
@@ -163,18 +195,31 @@ void Calculator::displayNumber(ComplexNumber a)
     display_i->setText(QString::number(imaginary));
 }
 
+/**
+ * @brief Clears the display.
+ *
+ * Sets both to zeros.
+ */
 void Calculator::clearDisplay()
 {
     display->setText(QString::number(0));
     display_i->setText(QString::number(0));
 }
 
+/**
+ * @brief Reads the values from the calculator.
+ *
+ * @return A ComplexNumber object representing the values displays.
+ */
 ComplexNumber Calculator::readNumber() {
     double real = std::stod(display->text().toStdString());
     double imaginary = std::stod(display_i->text().toStdString());
     return ComplexNumber(real, imaginary);
 }
 
+/**
+ * @brief Updates the values.
+ */
 void Calculator::updateValue()
 {
     calcMemory.updateValue(readNumber());
@@ -183,6 +228,10 @@ void Calculator::updateValue()
     display_i->setText(QString::number(0));
 }
 
+/**
+ * @brief Method handling clicking a number button.
+ *
+ */
 void Calculator::digitClicked()
 {
     Button *clickedButton = qobject_cast<Button *>(sender());
@@ -199,6 +248,10 @@ void Calculator::digitClicked()
     disp->setText(operand + QString::number(digitValue));
 }
 
+/**
+ * @brief Switches the sign of the value in the display.
+ *
+ */
 void Calculator::changeSignClicked() {
     QLineEdit *disp = getActiveDisplay();
     std::string text = disp->text().toStdString();
@@ -212,6 +265,9 @@ void Calculator::changeSignClicked() {
     disp->setText(QString::fromStdString(text));
 }
 
+/**
+ * @brief Adds a decimal poin.
+ */
 void Calculator::pointClicked()
 {
     QLineEdit *disp = getActiveDisplay();
@@ -220,30 +276,47 @@ void Calculator::pointClicked()
         disp->setText(disp->text() + tr("."));
 }
 
+/**
+ * @brief Performs addition and updates the calculator's state.
+ */
 void Calculator::add()
 {
     updateValue();
     operation = "addition";
 }
 
+/**
+ * @brief Performs subtraction and updates the calculator's state.
+ */
 void Calculator::subtract()
 {
     updateValue();
     operation = "subtraction";
 }
 
+/**
+ * @brief Performs multiplication and updates the calculator's state.
+ */
 void Calculator::multiply()
 {
     updateValue();
     operation = "multiplication";
 }
 
+/**
+ * @brief Performs division and updates the calculator's state.
+ */
 void Calculator::divide()
 {
     updateValue();
     operation = "division";
 }
 
+/**
+ * @brief Performs the operation, displays numeric result and plots it.
+ *
+ * @throws std::invalid_argument If division by zero occurs.
+ */
 void Calculator::equals()
 {
     bool newPlot = true;
@@ -271,6 +344,9 @@ void Calculator::equals()
     }
 }
 
+/**
+ * @brief Calculates the square root, displays it and plots it.
+ */
 void Calculator::root()
 {
     ComplexNumber read = readNumber();
@@ -280,6 +356,9 @@ void Calculator::root()
     updatePlot(read, output);
 }
 
+/**
+ * @brief Calculates the second power of the number, displays it and plots it.
+ */
 void Calculator::power()
 {
     ComplexNumber read = readNumber();
@@ -289,6 +368,9 @@ void Calculator::power()
     updatePlot(read, output);
 }
 
+/**
+ * @brief Calculates the absolute value of the number, displays it and plots it.
+ */
 void Calculator::absolute()
 {
     ComplexNumber read = readNumber();
@@ -298,6 +380,11 @@ void Calculator::absolute()
     updatePlot(read, output);
 }
 
+/**
+ * @brief Calculates the inverse, displays it and plots it.
+ *
+ * @throws std::invalid_argument If attempting to take the inverse of zero.
+ */
 void Calculator::inverse()
 {
     bool newPlot = true;
@@ -318,6 +405,9 @@ void Calculator::inverse()
 
 }
 
+/**
+ * @brief Calculates the conjugate of the number, displays it and plots it.
+ */
 void Calculator::conjugate()
 {
     ComplexNumber read = readNumber();
@@ -340,23 +430,35 @@ void Calculator::backspaceClicked()
     disp->setText(text);
 }
 
+/**
+ * @brief Clears the current value from the active display.
+ */
 void Calculator::clear()
 {
     QLineEdit *disp = getActiveDisplay();
     disp->setText("0");
 }
 
+/**
+ * @brief Clears both the real and imaginary displays.
+ */
 void Calculator::clearAll()
 {
     display->setText("0");
     display_i->setText("0");
 }
 
+/**
+ * @brief Clears the calculator's memory.
+ */
 void Calculator::clearMemory()
 {
     calcMemory.clearMemory();
 }
 
+/**
+ * @brief Reads the stored complex number from memory and displays it.
+ */
 void Calculator::readMemory()
 {
     ComplexNumber sumInMemory = calcMemory.readMemory();
@@ -364,16 +466,31 @@ void Calculator::readMemory()
     display_i->setText(QString::number(sumInMemory.getImaginary()));
 }
 
+/**
+ * @brief Reads the stored number from display and remembers it.
+ */
 void Calculator::setMemory()
 {
     calcMemory.setMemory(readNumber());
 }
 
+/**
+ * @brief Reads the stored number from display and ads it to the stored number.
+ */
 void Calculator::addToMemory()
 {
     calcMemory.addToMemory(readNumber());
 }
 
+/**
+ * @brief Updates the plot for a three-value calculation.
+ *
+ * This method creates a scatter plot with three data points.
+ *
+ * @param a first number to be plotted.
+ * @param b second number to be plotted.
+ * @param r result number to be plotted.
+ */
 void Calculator::updatePlot(ComplexNumber a, ComplexNumber b, ComplexNumber r) {
     QScatterSeries *seriesA = new QScatterSeries;
     QScatterSeries *seriesB = new QScatterSeries;
@@ -420,6 +537,14 @@ void Calculator::updatePlot(ComplexNumber a, ComplexNumber b, ComplexNumber r) {
     chart->axes(Qt::Vertical).back()->setTitleText("Imaginary Axis");
 }
 
+/**
+ * @brief Updates the plot for a two-value calculation.
+ *
+ * This method creates a scatter plot with two data points.
+ *
+ * @param a first number to be plotted.
+ * @param r result number to be plotted.
+ */
 void Calculator::updatePlot(ComplexNumber a, ComplexNumber r) {
     QScatterSeries *seriesA = new QScatterSeries;
     QScatterSeries *seriesR = new QScatterSeries;
@@ -462,6 +587,13 @@ void Calculator::updatePlot(ComplexNumber a, ComplexNumber r) {
     chart->axes(Qt::Vertical).back()->setTitleText("Imaginary Axis");
 }
 
+/**
+ * @brief Make a new Button object remember the function clicked.
+ *
+ * @tparam PointerToMemberFunction - pointer to a member function of the Calculator class
+ *
+ * @return A pointer to the newly created Button object.
+ */
 template<typename PointerToMemberFunction>
 Button *Calculator::createButton(const QString &text, const PointerToMemberFunction &member)
 {
