@@ -84,6 +84,11 @@ Calculator::Calculator(QWidget *parent)
     Button *invButton = createButton(tr("1/x"), &Calculator::inverse);
     Button *absButton = createButton(tr("|x|"), &Calculator::absolute);
 
+    Button *cAreaButton = createButton(tr("Circle Area"), &Calculator::calculateCircleArea);
+    Button *cCircButton = createButton(tr("Circle Circumference"), &Calculator::calculateCircleCircumference);
+    Button *tAreaButton = createButton(tr("Triangle Area"), &Calculator::calculateTriangleArea);
+    Button *tCircButton = createButton(tr("Triangle Circumference"), &Calculator::calculateTriangleCircumference);
+
 
     Button *equalButton = createButton(tr("="), &Calculator::equals);
 
@@ -129,10 +134,15 @@ Calculator::Calculator(QWidget *parent)
     mainLayout->addWidget(minusButton, 5, 4);
     mainLayout->addWidget(plusButton, 6, 4);
 
+    mainLayout->addWidget(cAreaButton, 7, 0, 1, 3);
+    mainLayout->addWidget(tAreaButton, 7, 3, 1, 3);
+    mainLayout->addWidget(cCircButton, 8, 0, 1, 3);
+    mainLayout->addWidget(tCircButton, 8, 3, 1, 3);
+
 
     // Chart for plotting the results.
     chartView->setChart(chart);
-    mainLayout->addWidget(chartView, 0, 7, 7, 5);
+    mainLayout->addWidget(chartView, 0, 7, 9, 5);
     chartView->setMinimumSize(QSize(400, 300));
     chart->createDefaultAxes();
 
@@ -417,6 +427,96 @@ void Calculator::conjugate()
     updatePlot(read, output);
 }
 
+/**
+ * @brief Calculates the circle area, displays it and plots it.
+ */
+void Calculator::calculateCircleArea() {
+    bool newPlot = true;
+
+    try {
+        double radius = readNumber().getReal();
+        double imaginaryPart = readNumber().getImaginary();
+        if (imaginaryPart != 0.0) {
+            throw std::invalid_argument("Imaginary part must be zero!");
+        }
+        Circle circle(radius); // Validation happens here (throws exception for negative radius)
+        double area = circle.calculateArea();
+        ComplexNumber output(area, 0);
+        displayNumber(output);
+        updatePlot(ComplexNumber(radius, 0), output);
+    } catch (const std::invalid_argument& e) {
+        QMessageBox::critical(this, "Area Error - accepts only positive real numbers!", e.what());
+        newPlot = false;
+    }
+}
+
+/**
+ * @brief Calculates the circle circumference, displays it and plots it.
+ */
+void Calculator::calculateCircleCircumference() {
+    ComplexNumber input = readNumber();
+    double radius = input.getReal();
+
+    try {
+        if (input.getImaginary() != 0.0) {
+            throw std::invalid_argument("Imaginary part must be zero!");
+        }
+
+        Circle circle(radius);
+        double circ = circle.calculateCircumference();
+        ComplexNumber output(circ, 0);
+        displayNumber(output);
+        updatePlot(input, output);  // Update plot after successful calculation
+    } catch (const std::invalid_argument& e) {
+        QMessageBox::critical(this, "Area Error - accepts only positive real numbers!", e.what());
+    }
+}
+
+/**
+ * @brief Calculates the triangle area, displays it and plots it.
+ */
+void Calculator::calculateTriangleArea() {
+    bool newPlot = true;
+
+    try {
+        double side = readNumber().getReal();
+        double imaginaryPart = readNumber().getImaginary();
+        if (imaginaryPart != 0.0) {
+            throw std::invalid_argument("Imaginary part must be zero!");
+        }
+        Triangle triangle(side); // Validation happens here (throws exception for negative radius)
+        double area = triangle.calculateArea();
+        ComplexNumber output(area, 0);
+        displayNumber(output);
+        updatePlot(ComplexNumber(side, 0), output);
+    } catch (const std::invalid_argument& e) {
+        QMessageBox::critical(this, "Area Error - accepts only positive real numbers!", e.what());
+        newPlot = false;
+    }
+}
+
+/**
+ * @brief Calculates the triangle circumference, displays it and plots it.
+ */
+void Calculator::calculateTriangleCircumference() {
+    bool newPlot = true;
+
+    try {
+        double side = readNumber().getReal();
+        double imaginaryPart = readNumber().getImaginary();
+        if (imaginaryPart != 0.0) {
+            throw std::invalid_argument("Imaginary part must be zero!");
+        }
+        Triangle triangle(side); // Validation happens here (throws exception for negative radius)
+        double circ = triangle.calculateCircumference();
+        ComplexNumber output(circ, 0);
+        displayNumber(output);
+        updatePlot(ComplexNumber(side, 0), output);
+    } catch (const std::invalid_argument& e) {
+        QMessageBox::critical(this, "Area Error - accepts only positive real numbers!", e.what());
+        newPlot = false;
+    }
+}
 
 void Calculator::backspaceClicked()
 {

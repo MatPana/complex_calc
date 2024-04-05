@@ -7,12 +7,18 @@
 #include <QGridLayout>
 #include "complexnumber.h"
 #include "calcmemory.h"
+#include "shape.h"
 
 QT_BEGIN_NAMESPACE
 class QLineEdit;
 QT_END_NAMESPACE
 class Button;
 
+/**
+ * @brief Class representing a simple calculator.
+ *
+ * Class provides both - simple and complex operations on complex number.
+ */
 class Calculator : public QWidget
 {
     Q_OBJECT
@@ -46,6 +52,11 @@ private slots:
     void inverse();
     void conjugate();
 
+    void calculateCircleCircumference();
+    void calculateCircleArea();
+    void calculateTriangleCircumference();
+    void calculateTriangleArea();
+
     void realClicked();
     void imgClicked();
     void updateValue();
@@ -71,6 +82,7 @@ private:
     QChartView *chartView;
     QGridLayout *mainLayout;
 
+    // Number of unique digits in decimal system.
     enum { NumDigitButtons = 10 };
     Button *digitButtons[NumDigitButtons];
 };

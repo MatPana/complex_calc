@@ -1,0 +1,205 @@
+#ifndef CALCULATOR_H
+#define CALCULATOR_H
+
+#include <QWidget>
+#include <QChart>
+#include <QChartView>
+#include <QGridLayout>
+#include "complexnumber.h"
+#include "calcmemory.h"
+#include "shape.h"
+
+QT_BEGIN_NAMESPACE
+class QLineEdit;
+QT_END_NAMESPACE
+class Button;
+
+/**
+ * @brief Class representing a simple calculator.
+ *
+ * Class provides both - simple and complex operations on complex number.
+ */
+class Calculator : public QWidget
+{
+    Q_OBJECT
+
+public:
+    Calculator(QWidget *parent = nullptr);
+
+private slots:
+    void digitClicked();
+    
+    /**
+     * @brief Adds a decimal poin.
+     */
+    void pointClicked();
+    
+    /**
+     * @brief Switches the sign of the value in the display.
+
+     */
+    void changeSignClicked();
+    
+    /**
+     * @brief Removes the last digit in the active display.
+    */
+    void backspaceClicked();
+    
+    /**
+     * @brief Clears the current value from the active display.
+    */
+    void clear();
+    
+    /**
+     * @brief Clears both the real and imaginary displays.
+    */
+    void clearAll();
+    
+    /**
+     * @brief Clears the calculator's memory.
+    */
+    void clearMemory();
+    
+    /**
+     * @brief Reads the stored complex number from memory and displays it.
+    */
+    void readMemory();
+    
+    /**
+     * @brief Reads the stored number from display and remembers it.
+    */
+    void setMemory();
+    
+    /**
+     * @brief Reads the stored number from display and ads it to the stored number.
+    */
+    void addToMemory();
+    
+    /**
+     * @brief Performs addition and updates the calculator's state.
+     */
+    void add();
+    
+    /**
+     * @brief Performs subtraction and updates the calculator's state.
+     */
+    void subtract();
+    
+    /**
+     * @brief Performs multiplication and updates the calculator's state.
+     */
+    void multiply();
+    
+    /**
+     * @brief Performs division and updates the calculator's state.
+     */
+    void divide();
+    
+    /**
+     * @brief Performs the operation, displays numeric result and plots it.
+     *
+     * @throws std::invalid_argument If division by zero occurs.
+     */
+    void equals();
+    
+    /**
+     * @brief Calculates the square root, displays it and plots it.
+     */
+    void root();
+    
+    /**
+     * @brief Calculates the second power of the number, displays it and plots it.
+     */
+    void power();
+    
+    /**
+     * @brief Calculates the absolute value of the number, displays it and plots it.
+     */
+    void absolute();
+    
+    /**
+     * @brief Calculates the inverse, displays it and plots it.
+     *
+     * @throws std::invalid_argument If attempting to take the inverse of zero.
+    */
+    void inverse();
+    void conjugate();
+    
+    /**
+     * @brief Calculates the circle circumference, displays it and plots it.
+    */
+    void calculateCircleCircumference();
+    
+    /**
+     * @brief Calculates the circle area, displays it and plots it.
+    */
+    void calculateCircleArea();
+    
+    /**
+     * @brief Calculates the triangle circumference, displays it and plots it.
+    */
+    void calculateTriangleCircumference();
+    
+    /**
+     * @brief Calculates the triangle area, displays it and plots it.
+    */
+    void calculateTriangleArea();
+
+    void realClicked();
+    void imgClicked();
+    void updateValue();
+    void clearDisplay();
+    
+    /**
+     * @brief Updates the plot for a three-value calculation.
+     *
+     * This method creates a scatter plot with three data points.
+     *
+     * @param a first number to be plotted.
+     * @param b second number to be plotted.
+     * @param r result number to be plotted.
+    */
+    void updatePlot(ComplexNumber a, ComplexNumber b, ComplexNumber r);
+    
+    /**
+     * @brief Updates the plot for a two-value calculation.
+     *
+     * This method creates a scatter plot with two data points.
+     *
+     * @param a first number to be plotted.
+     * @param r result number to be plotted.
+    */
+    void updatePlot(ComplexNumber a, ComplexNumber r);
+    QLineEdit* getActiveDisplay();
+    void displayNumber(ComplexNumber a);
+    ComplexNumber readNumber();
+
+private:
+    /**
+     * @brief Make a new Button object remember the function clicked.
+     *
+     * @tparam PointerToMemberFunction - pointer to a member function of the Calculator class
+     *
+     * @return A pointer to the newly created Button object.
+    */
+    template<typename PointerToMemberFunction>
+    
+    
+    Button *createButton(const QString &text, const PointerToMemberFunction &member);
+    bool calculate(double rightOperand, const QString &pendingOperator);
+
+    CalcMemory calcMemory;
+    bool realPart;
+    std::string operation;
+
+    QLineEdit *display, *display_i;
+    QPalette palette_active, palette_inactive;
+    QChart *chart;
+    QChartView *chartView;
+    QGridLayout *mainLayout;
+
+    // Number of unique digits in decimal system.
+    enum { NumDigitButtons = 10 };
+    Button *digitButtons[NumDigitButtons];
+};
+#endif

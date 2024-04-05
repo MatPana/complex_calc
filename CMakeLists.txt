@@ -18,6 +18,8 @@ qt_add_executable(calculator
     complexnumber.h complexnumber.cpp
     calcmemory.h
     calcmemory.h calcmemory.cpp
+    shape.h shape.cpp
+
 
 )
 
