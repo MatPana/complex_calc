@@ -1,4 +1,4 @@
-#include "calculator.h"
+﻿#include "calculator.h"
 #include "button.h"
 
 #include <QGridLayout>
@@ -217,7 +217,7 @@ void Calculator::clearDisplay()
 }
 
 /**
- * @brief Reads the values from the calculator.
+ * @brief Reads the values from the scren of the calculator.
  *
  * @return A ComplexNumber object representing the values displays.
  */
@@ -228,7 +228,7 @@ ComplexNumber Calculator::readNumber() {
 }
 
 /**
- * @brief Updates the values.
+ * @brief Updates the displayed values on both displays.
  */
 void Calculator::updateValue()
 {
@@ -240,7 +240,6 @@ void Calculator::updateValue()
 
 /**
  * @brief Method handling clicking a number button.
- *
  */
 void Calculator::digitClicked()
 {
@@ -260,7 +259,6 @@ void Calculator::digitClicked()
 
 /**
  * @brief Switches the sign of the value in the display.
- *
  */
 void Calculator::changeSignClicked() {
     QLineEdit *disp = getActiveDisplay();
@@ -431,22 +429,21 @@ void Calculator::conjugate()
  * @brief Calculates the circle area, displays it and plots it.
  */
 void Calculator::calculateCircleArea() {
-    bool newPlot = true;
-
     try {
-        double radius = readNumber().getReal();
-        double imaginaryPart = readNumber().getImaginary();
-        if (imaginaryPart != 0.0) {
+        ComplexNumber input = readNumber();
+        double radius = input.getReal();
+
+        if (input.getImaginary() != 0.0) {
             throw std::invalid_argument("Imaginary part must be zero!");
         }
-        Circle circle(radius); // Validation happens here (throws exception for negative radius)
+
+        Circle circle(radius);  // Validation happens here (throws exception for negative radius)
         double area = circle.calculateArea();
         ComplexNumber output(area, 0);
         displayNumber(output);
-        updatePlot(ComplexNumber(radius, 0), output);
+        updatePlot(input, output);
     } catch (const std::invalid_argument& e) {
         QMessageBox::critical(this, "Area Error - accepts only positive real numbers!", e.what());
-        newPlot = false;
     }
 }
 
@@ -476,22 +473,21 @@ void Calculator::calculateCircleCircumference() {
  * @brief Calculates the triangle area, displays it and plots it.
  */
 void Calculator::calculateTriangleArea() {
-    bool newPlot = true;
-
     try {
-        double side = readNumber().getReal();
-        double imaginaryPart = readNumber().getImaginary();
-        if (imaginaryPart != 0.0) {
+        ComplexNumber input = readNumber();
+        double side = input.getReal();
+
+        if (input.getImaginary() != 0.0) {
             throw std::invalid_argument("Imaginary part must be zero!");
         }
-        Triangle triangle(side); // Validation happens here (throws exception for negative radius)
+
+        Triangle triangle(side);  // Validation happens here (throws exception for negative radius)
         double area = triangle.calculateArea();
         ComplexNumber output(area, 0);
         displayNumber(output);
-        updatePlot(ComplexNumber(side, 0), output);
+        updatePlot(input, output);
     } catch (const std::invalid_argument& e) {
         QMessageBox::critical(this, "Area Error - accepts only positive real numbers!", e.what());
-        newPlot = false;
     }
 }
 
@@ -499,25 +495,27 @@ void Calculator::calculateTriangleArea() {
  * @brief Calculates the triangle circumference, displays it and plots it.
  */
 void Calculator::calculateTriangleCircumference() {
-    bool newPlot = true;
+    ComplexNumber input = readNumber();
+    double side = input.getReal();
 
     try {
-        double side = readNumber().getReal();
-        double imaginaryPart = readNumber().getImaginary();
-        if (imaginaryPart != 0.0) {
+        if (input.getImaginary() != 0.0) {
             throw std::invalid_argument("Imaginary part must be zero!");
         }
-        Triangle triangle(side); // Validation happens here (throws exception for negative radius)
+
+        Triangle triangle(side);
         double circ = triangle.calculateCircumference();
         ComplexNumber output(circ, 0);
         displayNumber(output);
-        updatePlot(ComplexNumber(side, 0), output);
+        updatePlot(input, output);  // Update plot after successful calculation
     } catch (const std::invalid_argument& e) {
         QMessageBox::critical(this, "Area Error - accepts only positive real numbers!", e.what());
-        newPlot = false;
     }
 }
 
+/**
+ * @brief Removes the last digit in the active display.
+ */
 void Calculator::backspaceClicked()
 {
     QLineEdit *disp = getActiveDisplay();
@@ -605,7 +603,7 @@ void Calculator::updatePlot(ComplexNumber a, ComplexNumber b, ComplexNumber r) {
 
     chart = new QChart;
     chartView = new QChartView(chart);
-    mainLayout->addWidget(chartView, 0, 7, 7, 5);
+    mainLayout->addWidget(chartView, 0, 7, 9, 5);
     chartView->setMinimumSize(QSize(400, 300));
     chart->createDefaultAxes();
     chart->addSeries(seriesA);
@@ -656,7 +654,7 @@ void Calculator::updatePlot(ComplexNumber a, ComplexNumber r) {
 
     chart = new QChart;
     chartView = new QChartView(chart);
-    mainLayout->addWidget(chartView, 0, 7, 7, 5);
+    mainLayout->addWidget(chartView, 0, 7, 9, 5);
     chartView->setMinimumSize(QSize(400, 300));
     chart->createDefaultAxes();
     chart->addSeries(seriesA);

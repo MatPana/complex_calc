@@ -82,9 +82,14 @@ public:
     ComplexNumber conjugate() const;
 
 private:
-    // Real part.
+    /**
+     * @brief Real part of a complex number (double).
+     */
     double real;
-    // Imaginary part.
+
+    /**
+     * @brief Imaginary part of a complex number (double).
+     */
     double imaginary;
 };
 
