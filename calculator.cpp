@@ -392,15 +392,9 @@ void Calculator::root() {
 void Calculator::power()
 {
     ComplexNumber read = readNumber();
-    std::unique_ptr<CalculatorOperation> operation = std::make_unique<MultiplicationOperation>();
-    ComplexNumber result = currentOperation->performOperation(read, &read);
+    std::unique_ptr<CalculatorOperation> operation = std::make_unique<SquareOperation>();
+    ComplexNumber result = currentOperation->performOperation(read, nullptr);
     displayNumber(result);
-    // ComplexNumber read = readNumber();
-    // std::unique_ptr<CalculatorOperation> operation = std::make_unique<SquareOperation>();
-
-    // ComplexNumber result = operation->performOperation(read, nullptr);
-
-    // displayNumber(result);
     updatePlot(read, result);
 }
 

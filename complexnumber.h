@@ -9,6 +9,7 @@
  */
 class ComplexNumber {
 public:
+    ComplexNumber();
     ComplexNumber(double a, double b);
     ~ComplexNumber();
 
@@ -17,6 +18,9 @@ public:
 
     /** @brief The imaginary part of the complex number. */
     double getImaginary() const { return imaginary; }
+
+    void setReal(double);
+    void setImaginary(double);
 
     /**
      * @brief Calculates the absolute value of the complex number.

@@ -8,6 +8,7 @@
 #include "complexnumber.h"
 #include "calcmemory.h"
 #include "shape.h"
+#include "historymanager.h"
 #include "calculatoroperation.h"
 
 QT_BEGIN_NAMESPACE
@@ -220,6 +221,7 @@ private slots:
      */
     ComplexNumber readNumber();
 
+
 private:
     /**
      * @brief Make a new Button object remember the function clicked.
@@ -302,5 +304,10 @@ private:
      * @brief Array of Button objects for digits (0-9).
      */
     Button *digitButtons[NumDigitButtons];
+
+    HistoryManager historyManager;
+
+    void moveBackInHistory();
+    void moveForwardInHistory();
 };
 #endif

@@ -1,7 +1,7 @@
 #ifndef CALCULATOR_OPERATIONS_H
 #define CALCULATOR_OPERATIONS_H
 
-#include "ComplexNumber.h"
+#include "complexnumber.h"
 #include <memory>
 #include <string>
 #include <stdexcept>
@@ -13,6 +13,8 @@ public:
     virtual ~CalculatorOperation() = default;
     virtual ComplexNumber performOperation(const ComplexNumber& operand1, const ComplexNumber* operand2 = nullptr) const = 0;
     virtual std::string serialize() const = 0;
+    virtual bool isUnary() const = 0;
+
     static std::unique_ptr<CalculatorOperation> deserialize(const std::string& serializedOperation);
 };
 
@@ -29,6 +31,8 @@ public:
     std::string serialize() const override {
         return "AdditionOperation";
     }
+
+    bool isUnary() const override { return false; }
 };
 
 
@@ -44,6 +48,8 @@ public:
     std::string serialize() const override {
         return "SubtractionOperation";
     }
+
+    bool isUnary() const override { return false; }
 };
 
 class MultiplicationOperation : public CalculatorOperation {
@@ -58,6 +64,8 @@ public:
     std::string serialize() const override {
         return "MultiplicationOperation";
     }
+
+    bool isUnary() const override { return false; }
 };
 
 
@@ -74,6 +82,8 @@ public:
     std::string serialize() const override {
         return "DivisionOperation";
     }
+
+    bool isUnary() const override { return false; }
 };
 
 
@@ -85,6 +95,8 @@ public:
     std::string serialize() const override {
         return "ConjugateOperation";
     }
+
+    bool isUnary() const override { return true; }
 };
 
 
@@ -101,6 +113,8 @@ public:
     std::string serialize() const override {
         return "AbsoluteValueOperation";
     }
+
+    bool isUnary() const override { return true; }
 };
 
 class SquareOperation : public CalculatorOperation {
@@ -112,6 +126,8 @@ public:
     std::string serialize() const override {
         return "SquareOperation";
     }
+
+    bool isUnary() const override { return true; }
 };
 
 class RootOperation : public CalculatorOperation {
@@ -126,6 +142,8 @@ public:
     std::string serialize() const override {
         return "RootOperation";
     }
+
+    bool isUnary() const override { return true; }
 };
 
 class InverseOperation : public CalculatorOperation {
@@ -140,6 +158,8 @@ public:
     std::string serialize() const override {
         return "InverseOperation";
     }
+
+    bool isUnary() const override { return true; }
 };
 
 std::unique_ptr<CalculatorOperation> CalculatorOperation::deserialize(const std::string& serializedOperation) {
@@ -159,7 +179,10 @@ std::unique_ptr<CalculatorOperation> CalculatorOperation::deserialize(const std:
         return std::make_unique<RootOperation>();
     } else if (serializedOperation == "InverseOperation") {
         return std::make_unique<InverseOperation>();
+    } else if (serializedOperation == "SquareOperation") {
+        return std::make_unique<SquareOperation>();
     }
+
 
     return nullptr;
 }

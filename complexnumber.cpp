@@ -1,11 +1,12 @@
 #include <cmath>
 #include <stdexcept>
-#include "ComplexNumber.h"
+#include "complexnumber.h"
 
 /**
  * @brief Default constructor.
  */
 ComplexNumber::ComplexNumber(double a, double b) : real(a), imaginary(b) {}
+ComplexNumber::ComplexNumber() : real(0), imaginary(0) {}
 
 /**
  * @brief Default destructor.
@@ -18,6 +19,15 @@ ComplexNumber performOperation(const ComplexNumber& a, const ComplexNumber& b) {
     Operation op;
     return (a.*op)(b);
 }
+
+void ComplexNumber::setReal(double value) {
+    this->real = value;
+};
+
+void ComplexNumber::setImaginary(double value) {
+    this->imaginary = value;
+};
+
 
 /**
  * @brief Addition.
