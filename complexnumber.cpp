@@ -67,6 +67,8 @@ ComplexNumber ComplexNumber::divide(const ComplexNumber& other) const {
                          (imaginary * other.real - real * other.imaginary) / denominator);
 }
 
+
+
 /**
  * @brief Aabsolute value of a complex number.
  *
@@ -75,6 +77,15 @@ ComplexNumber ComplexNumber::divide(const ComplexNumber& other) const {
 double ComplexNumber::absoluteValue() const {
     double absValue = std::sqrt(real * real + imaginary * imaginary);
     return absValue;
+}
+
+/**
+ * @brief Square a complex number.
+ *
+ * @return square of the complex number (ComplexNumber).
+ */
+ComplexNumber ComplexNumber::square() const {
+    return this->multiply(*this);
 }
 
 /**

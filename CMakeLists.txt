@@ -19,6 +19,9 @@ qt_add_executable(calculator
     calcmemory.h
     calcmemory.h calcmemory.cpp
     shape.h shape.cpp
+    calculatoroperation.h calculatoroperation.cpp
+    historymanager.h historymanager.cpp
+
 
 
 )

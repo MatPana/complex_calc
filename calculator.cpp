@@ -1,5 +1,6 @@
 ﻿#include "calculator.h"
 #include "button.h"
+#include "calculatoroperation.h"
 
 #include <QGridLayout>
 #include <QLineEdit>
@@ -22,6 +23,11 @@ Calculator::Calculator(QWidget *parent)
      */
     // Create calculator memory object
     CalcMemory calcMemory;
+
+    /**
+     *  @brief Pointer to currently conducted operation.
+     */
+    std::unique_ptr<CalculatorOperation> currentOperation;
 
     // Set color palette.
     palette_active.setColor(QPalette::Base,Qt::green);
@@ -236,6 +242,7 @@ void Calculator::updateValue()
 
     display->setText(QString::number(0));
     display_i->setText(QString::number(0));
+    realClicked();
 }
 
 /**
@@ -287,10 +294,9 @@ void Calculator::pointClicked()
 /**
  * @brief Performs addition and updates the calculator's state.
  */
-void Calculator::add()
-{
+void Calculator::add() {
+    currentOperation = std::make_unique<AdditionOperation>();
     updateValue();
-    operation = "addition";
 }
 
 /**
@@ -298,8 +304,8 @@ void Calculator::add()
  */
 void Calculator::subtract()
 {
+    currentOperation = std::make_unique<SubtractionOperation>();
     updateValue();
-    operation = "subtraction";
 }
 
 /**
@@ -307,8 +313,8 @@ void Calculator::subtract()
  */
 void Calculator::multiply()
 {
+    currentOperation = std::make_unique<MultiplicationOperation>();
     updateValue();
-    operation = "multiplication";
 }
 
 /**
@@ -316,8 +322,8 @@ void Calculator::multiply()
  */
 void Calculator::divide()
 {
+    currentOperation = std::make_unique<DivisionOperation>();
     updateValue();
-    operation = "division";
 }
 
 /**
@@ -325,43 +331,59 @@ void Calculator::divide()
  *
  * @throws std::invalid_argument If division by zero occurs.
  */
-void Calculator::equals()
-{
-    bool newPlot = true;
-    ComplexNumber read = readNumber();
-    ComplexNumber result(0, 0);
-    ComplexNumber lastValue = calcMemory.getLast();
-    if (operation == "addition") {
-        result = read.add(lastValue);
-    } else if (operation == "subtraction") {
-        result = lastValue.subtract(read);
-    }else if (operation == "multiplication") {
-        result = read.multiply(lastValue);
-    }else if (operation == "division") {
-        try {
-            result = lastValue.divide(read);
-        } catch (std::invalid_argument) {
-            result = ComplexNumber(0.0, 0.0);
-            QMessageBox::critical(this, "Division error", "Cannot divide by zero!");
-            newPlot = false;
+// void Calculator::equals()
+// {
+//     bool newPlot = true;
+//     ComplexNumber read = readNumber();
+//     ComplexNumber result(0, 0);
+//     ComplexNumber lastValue = calcMemory.getLast();
+//     if (operation == "addition") {
+//         result = read.add(lastValue);
+//     } else if (operation == "subtraction") {
+//         result = lastValue.subtract(read);
+//     }else if (operation == "multiplication") {
+//         result = read.multiply(lastValue);
+//     }else if (operation == "division") {
+//         try {
+//             result = lastValue.divide(read);
+//         } catch (std::invalid_argument) {
+//             result = ComplexNumber(0.0, 0.0);
+//             QMessageBox::critical(this, "Division error", "Cannot divide by zero!");
+//             newPlot = false;
+//         }
+//     }
+//     displayNumber(result);
+//     if (newPlot) {
+//         updatePlot(lastValue, read, result);
+//     }
+// }
+
+void Calculator::equals() {
+    try {
+        ComplexNumber read = readNumber();
+        ComplexNumber last = calcMemory.getLast();
+        if (currentOperation) {
+            ComplexNumber result = currentOperation->performOperation(last, &read);
+            displayNumber(result);
+            updatePlot(last, read, result);
         }
-    }
-    displayNumber(result);
-    if (newPlot) {
-        updatePlot(lastValue, read, result);
+    } catch (const std::exception& e) {
+        QMessageBox::warning(this, "Operation Error", e.what());
     }
 }
 
 /**
  * @brief Calculates the square root, displays it and plots it.
  */
-void Calculator::root()
-{
-    ComplexNumber read = readNumber();
-    ComplexNumber output = read.root();
+void Calculator::root() {
+    ComplexNumber operand1 = readNumber();
+    std::unique_ptr<CalculatorOperation> operation = std::make_unique<RootOperation>();
 
-    displayNumber(output);
-    updatePlot(read, output);
+
+    ComplexNumber result = operation->performOperation(operand1, nullptr);
+
+    displayNumber(result);
+    updatePlot(operand1, result);
 }
 
 /**
@@ -370,10 +392,16 @@ void Calculator::root()
 void Calculator::power()
 {
     ComplexNumber read = readNumber();
-    ComplexNumber output = read.multiply(read);
+    std::unique_ptr<CalculatorOperation> operation = std::make_unique<MultiplicationOperation>();
+    ComplexNumber result = currentOperation->performOperation(read, &read);
+    displayNumber(result);
+    // ComplexNumber read = readNumber();
+    // std::unique_ptr<CalculatorOperation> operation = std::make_unique<SquareOperation>();
 
-    displayNumber(output);
-    updatePlot(read, output);
+    // ComplexNumber result = operation->performOperation(read, nullptr);
+
+    // displayNumber(result);
+    updatePlot(read, result);
 }
 
 /**
@@ -382,7 +410,9 @@ void Calculator::power()
 void Calculator::absolute()
 {
     ComplexNumber read = readNumber();
-    ComplexNumber output(read.absoluteValue(), 0.0);
+    std::unique_ptr<CalculatorOperation> operation = std::make_unique<AbsoluteValueOperation>();
+
+    ComplexNumber output = operation->performOperation(read, nullptr);
 
     displayNumber(output);
     updatePlot(read, output);
@@ -393,24 +423,18 @@ void Calculator::absolute()
  *
  * @throws std::invalid_argument If attempting to take the inverse of zero.
  */
-void Calculator::inverse()
-{
-    bool newPlot = true;
+void Calculator::inverse() {
     ComplexNumber read = readNumber();
-    ComplexNumber result(0.0, 0.0);
+    std::unique_ptr<CalculatorOperation> operation = std::make_unique<InverseOperation>();
 
     try {
-        result = read.inverse();
-    } catch (std::invalid_argument) {
-        QMessageBox::critical(this, "Inverse error", "Cannot divide by zero!");
-        newPlot = false;
-    }
+        ComplexNumber result = operation->performOperation(read, nullptr);
 
-    displayNumber(result);
-    if (newPlot) {
+        displayNumber(result);
         updatePlot(read, result);
+    } catch (const std::invalid_argument& e) {
+        QMessageBox::critical(this, "Inverse error", e.what());
     }
-
 }
 
 /**
@@ -419,7 +443,10 @@ void Calculator::inverse()
 void Calculator::conjugate()
 {
     ComplexNumber read = readNumber();
-    ComplexNumber output = read.conjugate();
+    std::unique_ptr<CalculatorOperation> operation = std::make_unique<ConjugateOperation>();
+
+    ComplexNumber output = operation->performOperation(read, nullptr);
+
 
     displayNumber(output);
     updatePlot(read, output);

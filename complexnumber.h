@@ -59,6 +59,13 @@ public:
     ComplexNumber divide(const ComplexNumber& other) const;
 
     /**
+     * @brief Square of the complex number.
+     *
+     * @return result (ComplexNumber).
+     */
+    ComplexNumber square() const;
+
+    /**
      * @brief Square root of the complex number.
      *
      * @return result (ComplexNumber).

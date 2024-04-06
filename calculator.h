@@ -8,6 +8,7 @@
 #include "complexnumber.h"
 #include "calcmemory.h"
 #include "shape.h"
+#include "calculatoroperation.h"
 
 QT_BEGIN_NAMESPACE
 class QLineEdit;
@@ -247,6 +248,11 @@ private:
      *  @brief An object to manage calculator memory (CalcMemory).
      */
     CalcMemory calcMemory;
+
+    /**
+     *  @brief Pointer to currently conducted operation.
+     */
+    std::unique_ptr<CalculatorOperation> currentOperation;
 
     /**
      * @brief A flag indicating whether the real or imaginary part is currently being edited.
