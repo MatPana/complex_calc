@@ -95,6 +95,8 @@ Calculator::Calculator(QWidget *parent)
     Button *tAreaButton = createButton(tr("Triangle Area"), &Calculator::calculateTriangleArea);
     Button *tCircButton = createButton(tr("Triangle Circumference"), &Calculator::calculateTriangleCircumference);
 
+    Button *undoButton = createButton(tr("Undo"), &Calculator::undo);
+    Button *redoButton = createButton(tr("Redo"), &Calculator::redo);
 
     Button *equalButton = createButton(tr("="), &Calculator::equals);
 
@@ -142,8 +144,8 @@ Calculator::Calculator(QWidget *parent)
 
     mainLayout->addWidget(cAreaButton, 7, 0, 1, 3);
     mainLayout->addWidget(tAreaButton, 7, 3, 1, 3);
-    mainLayout->addWidget(cCircButton, 8, 0, 1, 3);
-    mainLayout->addWidget(tCircButton, 8, 3, 1, 3);
+    mainLayout->addWidget(undoButton, 8, 0, 1, 3);
+    mainLayout->addWidget(redoButton, 8, 3, 1, 3);
 
 
     // Chart for plotting the results.
@@ -198,7 +200,7 @@ QLineEdit* Calculator::getActiveDisplay()
 }
 
 /**
- * @brief Updates the calculator displays..
+ * @brief Updates the calculator displays.
  *
  * @param a - complex number to be displayed.
  */
@@ -230,6 +232,7 @@ void Calculator::clearDisplay()
 ComplexNumber Calculator::readNumber() {
     double real = std::stod(display->text().toStdString());
     double imaginary = std::stod(display_i->text().toStdString());
+    realClicked();
     return ComplexNumber(real, imaginary);
 }
 
@@ -331,39 +334,16 @@ void Calculator::divide()
  *
  * @throws std::invalid_argument If division by zero occurs.
  */
-// void Calculator::equals()
-// {
-//     bool newPlot = true;
-//     ComplexNumber read = readNumber();
-//     ComplexNumber result(0, 0);
-//     ComplexNumber lastValue = calcMemory.getLast();
-//     if (operation == "addition") {
-//         result = read.add(lastValue);
-//     } else if (operation == "subtraction") {
-//         result = lastValue.subtract(read);
-//     }else if (operation == "multiplication") {
-//         result = read.multiply(lastValue);
-//     }else if (operation == "division") {
-//         try {
-//             result = lastValue.divide(read);
-//         } catch (std::invalid_argument) {
-//             result = ComplexNumber(0.0, 0.0);
-//             QMessageBox::critical(this, "Division error", "Cannot divide by zero!");
-//             newPlot = false;
-//         }
-//     }
-//     displayNumber(result);
-//     if (newPlot) {
-//         updatePlot(lastValue, read, result);
-//     }
-// }
-
 void Calculator::equals() {
     try {
         ComplexNumber read = readNumber();
         ComplexNumber last = calcMemory.getLast();
         if (currentOperation) {
             ComplexNumber result = currentOperation->performOperation(last, &read);
+
+            historyManager.addOperation(std::move(currentOperation), result, last, &read);
+            historyIndex = historyManager.getHistorySize() - 1;
+
             displayNumber(result);
             updatePlot(last, read, result);
         }
@@ -376,14 +356,15 @@ void Calculator::equals() {
  * @brief Calculates the square root, displays it and plots it.
  */
 void Calculator::root() {
-    ComplexNumber operand1 = readNumber();
+    ComplexNumber read = readNumber();
     std::unique_ptr<CalculatorOperation> operation = std::make_unique<RootOperation>();
 
+    ComplexNumber result = operation->performOperation(read, nullptr);
 
-    ComplexNumber result = operation->performOperation(operand1, nullptr);
+    historyManager.addOperation(std::make_unique<RootOperation>(), result, read);
 
     displayNumber(result);
-    updatePlot(operand1, result);
+    updatePlot(read, result);
 }
 
 /**
@@ -393,7 +374,11 @@ void Calculator::power()
 {
     ComplexNumber read = readNumber();
     std::unique_ptr<CalculatorOperation> operation = std::make_unique<SquareOperation>();
-    ComplexNumber result = currentOperation->performOperation(read, nullptr);
+
+    ComplexNumber result = operation->performOperation(read, nullptr);
+
+    historyManager.addOperation(std::make_unique<SquareOperation>(), result, read);
+
     displayNumber(result);
     updatePlot(read, result);
 }
@@ -407,6 +392,8 @@ void Calculator::absolute()
     std::unique_ptr<CalculatorOperation> operation = std::make_unique<AbsoluteValueOperation>();
 
     ComplexNumber output = operation->performOperation(read, nullptr);
+
+    historyManager.addOperation(std::make_unique<AbsoluteValueOperation>(), output, read);
 
     displayNumber(output);
     updatePlot(read, output);
@@ -423,6 +410,7 @@ void Calculator::inverse() {
 
     try {
         ComplexNumber result = operation->performOperation(read, nullptr);
+        historyManager.addOperation(std::make_unique<InverseOperation>(), result, read);
 
         displayNumber(result);
         updatePlot(read, result);
@@ -440,6 +428,8 @@ void Calculator::conjugate()
     std::unique_ptr<CalculatorOperation> operation = std::make_unique<ConjugateOperation>();
 
     ComplexNumber output = operation->performOperation(read, nullptr);
+
+    historyManager.addOperation(std::make_unique<ConjugateOperation>(), output, read);
 
 
     displayNumber(output);
@@ -719,4 +709,34 @@ Button *Calculator::createButton(const QString &text, const PointerToMemberFunct
     Button *button = new Button(text);
     connect(button, &Button::clicked, this, member);
     return button;
+}
+
+void Calculator::undo() {
+    if (historyIndex > 0) { // There is a history.
+        historyIndex--;
+        const auto& entry = historyManager.getHistoryEntry(historyIndex);
+        if (entry.operation->isUnary()) {
+            updatePlot(entry.operand1, entry.result);
+        } else {
+            updatePlot(entry.operand1, entry.operand2, entry.result);
+        }
+        displayNumber(entry.result);
+    }
+
+}
+
+void Calculator::redo() {
+    int historySize = historyManager.getHistorySize();
+    if (historyIndex < historySize - 1) { // There is "future" to move to.
+        historyIndex++;
+        const auto& entry = historyManager.getHistoryEntry(historyIndex);
+        if (entry.operation->isUnary()) {
+            updatePlot(entry.operand1, entry.result);
+        } else {
+            updatePlot(entry.operand1, entry.operand2, entry.result);
+        }
+
+        displayNumber(entry.result);
+    }
+
 }

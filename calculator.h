@@ -221,6 +221,9 @@ private slots:
      */
     ComplexNumber readNumber();
 
+    void undo();
+    void redo();
+
 
 private:
     /**
@@ -306,8 +309,6 @@ private:
     Button *digitButtons[NumDigitButtons];
 
     HistoryManager historyManager;
-
-    void moveBackInHistory();
-    void moveForwardInHistory();
+    int historyIndex = -1;
 };
 #endif

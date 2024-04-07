@@ -103,9 +103,6 @@ public:
 class AbsoluteValueOperation : public CalculatorOperation {
 public:
     ComplexNumber performOperation(const ComplexNumber& operand1, const ComplexNumber* operand2 = nullptr) const override {
-        if (operand2 != nullptr) {
-            throw std::invalid_argument("AbsoluteValueOperation does not require a second operand.");
-        }
         double absValue = operand1.absoluteValue();
         return ComplexNumber(absValue, 0);
     }
@@ -133,9 +130,6 @@ public:
 class RootOperation : public CalculatorOperation {
 public:
     ComplexNumber performOperation(const ComplexNumber& operand1, const ComplexNumber* operand2 = nullptr) const override {
-        if (operand2 != nullptr) {
-            throw std::invalid_argument("RootOperation does not require a second operand.");
-        }
         return operand1.root();
     }
 

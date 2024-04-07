@@ -28,7 +28,6 @@ void ComplexNumber::setImaginary(double value) {
     this->imaginary = value;
 };
 
-
 /**
  * @brief Addition.
  *
@@ -95,7 +94,7 @@ double ComplexNumber::absoluteValue() const {
  * @return square of the complex number (ComplexNumber).
  */
 ComplexNumber ComplexNumber::square() const {
-    return this->multiply(*this);
+    return this->add(*this);
 }
 
 /**
