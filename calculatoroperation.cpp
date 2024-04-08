@@ -7,12 +7,38 @@
 #include <stdexcept>
 
 
-
+/**
+ * \brief Base class for calculator operations.
+ */
 class CalculatorOperation {
 public:
+    /**
+     * \brief Virtual destructor.
+     */
     virtual ~CalculatorOperation() = default;
+
+    /**
+     * \brief Performs operation (later like addition, multiplication).
+     *
+     * \param operand1  first operand.
+     * \param operand2  second operand (optional).
+     *
+     * \return result
+     */
     virtual ComplexNumber performOperation(const ComplexNumber& operand1, const ComplexNumber* operand2 = nullptr) const = 0;
+
+    /**
+     * \brief Serializes the operation into a string.
+     *
+     * \return string
+     */
     virtual std::string serialize() const = 0;
+
+    /**
+     * \brief Checks if the operation is unary.
+     *
+     * \return bool - true if unary, false if binary
+     */
     virtual bool isUnary() const = 0;
 
     static std::unique_ptr<CalculatorOperation> deserialize(const std::string& serializedOperation);

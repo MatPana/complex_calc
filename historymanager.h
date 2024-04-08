@@ -20,11 +20,18 @@ public:
 class HistoryManager {
 public:
     void addOperation(std::unique_ptr<CalculatorOperation> operation, const ComplexNumber& result, const ComplexNumber& operand1, const ComplexNumber* operand2 = nullptr);
+
     std::string serializeHistory() const;
     void deserializeHistory(const std::string& serializedHistory);
     std::unique_ptr<CalculatorOperation> createOperation(const std::string& operationName) const;
+
     const HistoryEntry& getHistoryEntry(int index) const { return history.at(index); }
     int getHistorySize() const { return static_cast<int>(history.size()); }
+
+    void saveHistoryToFile(const std::string& filePath) const;
+    void loadHistoryFromFile(const std::string& filePath);
+
+    void clearHistory();
 
 private:
     std::vector<HistoryEntry> history;

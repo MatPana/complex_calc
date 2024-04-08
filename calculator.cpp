@@ -2,6 +2,7 @@
 #include "button.h"
 #include "calculatoroperation.h"
 
+#include <string>
 #include <QGridLayout>
 #include <QLineEdit>
 #include <QtMath>
@@ -11,6 +12,7 @@
 #include <QScatterSeries>
 #include <QMargins>
 #include <QMessageBox>
+#include <QFileDialog>
 
 Calculator::Calculator(QWidget *parent)
     : QWidget(parent),
@@ -90,13 +92,16 @@ Calculator::Calculator(QWidget *parent)
     Button *invButton = createButton(tr("1/x"), &Calculator::inverse);
     Button *absButton = createButton(tr("|x|"), &Calculator::absolute);
 
-    Button *cAreaButton = createButton(tr("Circle Area"), &Calculator::calculateCircleArea);
-    Button *cCircButton = createButton(tr("Circle Circumference"), &Calculator::calculateCircleCircumference);
-    Button *tAreaButton = createButton(tr("Triangle Area"), &Calculator::calculateTriangleArea);
-    Button *tCircButton = createButton(tr("Triangle Circumference"), &Calculator::calculateTriangleCircumference);
-
     Button *undoButton = createButton(tr("Undo"), &Calculator::undo);
     Button *redoButton = createButton(tr("Redo"), &Calculator::redo);
+
+    Button *showOp1Button = createButton(tr("Operand 1"), &Calculator::showOperand1);
+    Button *showOp2Button = createButton(tr("Operand 2"), &Calculator::showOperand2);
+    Button *showResButton = createButton(tr("Result"), &Calculator::showResult);
+
+    Button *loadButton = createButton(tr("Load History"), &Calculator::loadHistory);
+    Button *saveButton = createButton(tr("Save History"), &Calculator::saveHistory);
+    Button *clearHButton = createButton(tr("Clear History"), &Calculator::clearHistory);
 
     Button *equalButton = createButton(tr("="), &Calculator::equals);
 
@@ -142,15 +147,21 @@ Calculator::Calculator(QWidget *parent)
     mainLayout->addWidget(minusButton, 5, 4);
     mainLayout->addWidget(plusButton, 6, 4);
 
-    mainLayout->addWidget(cAreaButton, 7, 0, 1, 3);
-    mainLayout->addWidget(tAreaButton, 7, 3, 1, 3);
-    mainLayout->addWidget(undoButton, 8, 0, 1, 3);
-    mainLayout->addWidget(redoButton, 8, 3, 1, 3);
+    mainLayout->addWidget(undoButton, 7, 0, 1, 3);
+    mainLayout->addWidget(redoButton, 7, 3, 1, 3);
+
+    mainLayout->addWidget(showOp1Button, 8, 0, 1, 2);
+    mainLayout->addWidget(showOp2Button, 8, 2, 1, 2);
+    mainLayout->addWidget(showResButton, 8, 4, 1, 2);
+
+    mainLayout->addWidget(loadButton, 9, 0, 1, 2);
+    mainLayout->addWidget(saveButton, 9, 2, 1, 2);
+    mainLayout->addWidget(clearHButton, 9, 4, 1, 2);
 
 
     // Chart for plotting the results.
     chartView->setChart(chart);
-    mainLayout->addWidget(chartView, 0, 7, 9, 5);
+    mainLayout->addWidget(chartView, 0, 7, 10, 5);
     chartView->setMinimumSize(QSize(400, 300));
     chart->createDefaultAxes();
 
@@ -222,6 +233,7 @@ void Calculator::clearDisplay()
 {
     display->setText(QString::number(0));
     display_i->setText(QString::number(0));
+    clearPlot();
 }
 
 /**
@@ -341,11 +353,11 @@ void Calculator::equals() {
         if (currentOperation) {
             ComplexNumber result = currentOperation->performOperation(last, &read);
 
+            displayNumber(result);
+            updatePlot(last, read, result, currentOperation->serialize());
+
             historyManager.addOperation(std::move(currentOperation), result, last, &read);
             historyIndex = historyManager.getHistorySize() - 1;
-
-            displayNumber(result);
-            updatePlot(last, read, result);
         }
     } catch (const std::exception& e) {
         QMessageBox::warning(this, "Operation Error", e.what());
@@ -364,7 +376,7 @@ void Calculator::root() {
     historyManager.addOperation(std::make_unique<RootOperation>(), result, read);
 
     displayNumber(result);
-    updatePlot(read, result);
+    updatePlot(read, result, operation->serialize());
 }
 
 /**
@@ -380,7 +392,7 @@ void Calculator::power()
     historyManager.addOperation(std::make_unique<SquareOperation>(), result, read);
 
     displayNumber(result);
-    updatePlot(read, result);
+    updatePlot(read, result, operation->serialize());
 }
 
 /**
@@ -396,7 +408,7 @@ void Calculator::absolute()
     historyManager.addOperation(std::make_unique<AbsoluteValueOperation>(), output, read);
 
     displayNumber(output);
-    updatePlot(read, output);
+    updatePlot(read, output, operation->serialize());
 }
 
 /**
@@ -413,7 +425,7 @@ void Calculator::inverse() {
         historyManager.addOperation(std::make_unique<InverseOperation>(), result, read);
 
         displayNumber(result);
-        updatePlot(read, result);
+        updatePlot(read, result, operation->serialize());
     } catch (const std::invalid_argument& e) {
         QMessageBox::critical(this, "Inverse error", e.what());
     }
@@ -433,95 +445,7 @@ void Calculator::conjugate()
 
 
     displayNumber(output);
-    updatePlot(read, output);
-}
-
-/**
- * @brief Calculates the circle area, displays it and plots it.
- */
-void Calculator::calculateCircleArea() {
-    try {
-        ComplexNumber input = readNumber();
-        double radius = input.getReal();
-
-        if (input.getImaginary() != 0.0) {
-            throw std::invalid_argument("Imaginary part must be zero!");
-        }
-
-        Circle circle(radius);  // Validation happens here (throws exception for negative radius)
-        double area = circle.calculateArea();
-        ComplexNumber output(area, 0);
-        displayNumber(output);
-        updatePlot(input, output);
-    } catch (const std::invalid_argument& e) {
-        QMessageBox::critical(this, "Area Error - accepts only positive real numbers!", e.what());
-    }
-}
-
-/**
- * @brief Calculates the circle circumference, displays it and plots it.
- */
-void Calculator::calculateCircleCircumference() {
-    ComplexNumber input = readNumber();
-    double radius = input.getReal();
-
-    try {
-        if (input.getImaginary() != 0.0) {
-            throw std::invalid_argument("Imaginary part must be zero!");
-        }
-
-        Circle circle(radius);
-        double circ = circle.calculateCircumference();
-        ComplexNumber output(circ, 0);
-        displayNumber(output);
-        updatePlot(input, output);  // Update plot after successful calculation
-    } catch (const std::invalid_argument& e) {
-        QMessageBox::critical(this, "Area Error - accepts only positive real numbers!", e.what());
-    }
-}
-
-/**
- * @brief Calculates the triangle area, displays it and plots it.
- */
-void Calculator::calculateTriangleArea() {
-    try {
-        ComplexNumber input = readNumber();
-        double side = input.getReal();
-
-        if (input.getImaginary() != 0.0) {
-            throw std::invalid_argument("Imaginary part must be zero!");
-        }
-
-        Triangle triangle(side);  // Validation happens here (throws exception for negative radius)
-        double area = triangle.calculateArea();
-        ComplexNumber output(area, 0);
-        displayNumber(output);
-        updatePlot(input, output);
-    } catch (const std::invalid_argument& e) {
-        QMessageBox::critical(this, "Area Error - accepts only positive real numbers!", e.what());
-    }
-}
-
-/**
- * @brief Calculates the triangle circumference, displays it and plots it.
- */
-void Calculator::calculateTriangleCircumference() {
-    ComplexNumber input = readNumber();
-    double side = input.getReal();
-
-    try {
-        if (input.getImaginary() != 0.0) {
-            throw std::invalid_argument("Imaginary part must be zero!");
-        }
-
-        Triangle triangle(side);
-        double circ = triangle.calculateCircumference();
-        ComplexNumber output(circ, 0);
-        displayNumber(output);
-        updatePlot(input, output);  // Update plot after successful calculation
-    } catch (const std::invalid_argument& e) {
-        QMessageBox::critical(this, "Area Error - accepts only positive real numbers!", e.what());
-    }
+    updatePlot(read, output, operation->serialize());
 }
 
 /**
@@ -555,6 +479,7 @@ void Calculator::clearAll()
 {
     display->setText("0");
     display_i->setText("0");
+    clearPlot();
 }
 
 /**
@@ -600,7 +525,51 @@ void Calculator::addToMemory()
  * @param b second number to be plotted.
  * @param r result number to be plotted.
  */
-void Calculator::updatePlot(ComplexNumber a, ComplexNumber b, ComplexNumber r) {
+void Calculator::updatePlot(const ComplexNumber& a, const ComplexNumber& b, const ComplexNumber& r, const std::string& operationType) {
+    // QScatterSeries *seriesA = new QScatterSeries;
+    // QScatterSeries *seriesB = new QScatterSeries;
+    // QScatterSeries *seriesR = new QScatterSeries;
+    // seriesA->setName("First Value");
+    // seriesB->setName("Second Value");
+    // seriesR->setName("Result");
+
+    // seriesA->append(a.getReal(), a.getImaginary());
+    // seriesB->append(b.getReal(), b.getImaginary());
+    // seriesR->append(r.getReal(), r.getImaginary());
+
+    // chart = new QChart;
+    // chartView = new QChartView(chart);
+    // chart->setTitle(QString::fromStdString(operationType));
+    // mainLayout->addWidget(chartView, 0, 7, 10, 5);
+    // chartView->setMinimumSize(QSize(400, 300));
+    // chart->createDefaultAxes();
+    // chart->addSeries(seriesA);
+    // chart->addSeries(seriesB);
+    // chart->addSeries(seriesR);
+
+    // double minReal = std::min({a.getReal(), b.getReal(), r.getReal()});
+    // double maxReal = std::max({a.getReal(), b.getReal(), r.getReal()});
+    // double minImag = std::min({a.getImaginary(), b.getImaginary(), r.getImaginary()});
+    // double maxImag = std::max({a.getImaginary(), b.getImaginary(), r.getImaginary()});
+
+    // double realRange = maxReal - minReal;
+    // double imagRange = maxImag - minImag;
+
+    // double realMargin = realRange * 0.1;
+    // double imagMargin = imagRange * 0.1;
+
+    // if (realMargin == 0) {
+    //     realMargin = 0.1;
+    // }
+    // if (imagMargin == 0) {
+    //     imagMargin = 0.1;
+    // }
+
+    // chart->createDefaultAxes();
+    // chart->axes(Qt::Horizontal).back()->setRange(minReal - realMargin, maxReal + realMargin);
+    // chart->axes(Qt::Vertical).back()->setRange(minImag - imagMargin, maxImag + imagMargin);
+    // chart->axes(Qt::Horizontal).back()->setTitleText("Real Axis");
+    // chart->axes(Qt::Vertical).back()->setTitleText("Imaginary Axis");
     QScatterSeries *seriesA = new QScatterSeries;
     QScatterSeries *seriesB = new QScatterSeries;
     QScatterSeries *seriesR = new QScatterSeries;
@@ -612,38 +581,21 @@ void Calculator::updatePlot(ComplexNumber a, ComplexNumber b, ComplexNumber r) {
     seriesB->append(b.getReal(), b.getImaginary());
     seriesR->append(r.getReal(), r.getImaginary());
 
-    chart = new QChart;
-    chartView = new QChartView(chart);
-    mainLayout->addWidget(chartView, 0, 7, 9, 5);
-    chartView->setMinimumSize(QSize(400, 300));
-    chart->createDefaultAxes();
+    chart->removeAllSeries();
+
+    chart->setTitle(QString::fromStdString(operationType));
     chart->addSeries(seriesA);
     chart->addSeries(seriesB);
     chart->addSeries(seriesR);
+    chart->createDefaultAxes();
+
 
     double minReal = std::min({a.getReal(), b.getReal(), r.getReal()});
     double maxReal = std::max({a.getReal(), b.getReal(), r.getReal()});
     double minImag = std::min({a.getImaginary(), b.getImaginary(), r.getImaginary()});
     double maxImag = std::max({a.getImaginary(), b.getImaginary(), r.getImaginary()});
 
-    double realRange = maxReal - minReal;
-    double imagRange = maxImag - minImag;
-
-    double realMargin = realRange * 0.1;
-    double imagMargin = imagRange * 0.1;
-
-    if (realMargin == 0) {
-        realMargin = 0.1;
-    }
-    if (imagMargin == 0) {
-        imagMargin = 0.1;
-    }
-
-    chart->createDefaultAxes();
-    chart->axes(Qt::Horizontal).back()->setRange(minReal - realMargin, maxReal + realMargin);
-    chart->axes(Qt::Vertical).back()->setRange(minImag - imagMargin, maxImag + imagMargin);
-    chart->axes(Qt::Horizontal).back()->setTitleText("Real Axis");
-    chart->axes(Qt::Vertical).back()->setTitleText("Imaginary Axis");
+    adjustAxes(minReal, maxReal, minImag, maxImag);
 }
 
 /**
@@ -654,7 +606,7 @@ void Calculator::updatePlot(ComplexNumber a, ComplexNumber b, ComplexNumber r) {
  * @param a first number to be plotted.
  * @param r result number to be plotted.
  */
-void Calculator::updatePlot(ComplexNumber a, ComplexNumber r) {
+void Calculator::updatePlot(const ComplexNumber& a, const ComplexNumber& r, const std::string& operationType) {
     QScatterSeries *seriesA = new QScatterSeries;
     QScatterSeries *seriesR = new QScatterSeries;
     seriesA->setName("Value");
@@ -663,38 +615,54 @@ void Calculator::updatePlot(ComplexNumber a, ComplexNumber r) {
     seriesA->append(a.getReal(), a.getImaginary());
     seriesR->append(r.getReal(), r.getImaginary());
 
-    chart = new QChart;
-    chartView = new QChartView(chart);
-    mainLayout->addWidget(chartView, 0, 7, 9, 5);
-    chartView->setMinimumSize(QSize(400, 300));
-    chart->createDefaultAxes();
+    chart->removeAllSeries();
+
+    chart->setTitle(QString::fromStdString(operationType));
     chart->addSeries(seriesA);
     chart->addSeries(seriesR);
+    chart->createDefaultAxes();
+
 
     double minReal = std::min({a.getReal(), r.getReal()});
     double maxReal = std::max({a.getReal(), r.getReal()});
     double minImag = std::min({a.getImaginary(), r.getImaginary()});
     double maxImag = std::max({a.getImaginary(), r.getImaginary()});
 
+    adjustAxes(minReal, maxReal, minImag, maxImag);
+}
+
+void Calculator::adjustAxes(double minReal, double maxReal, double minImag, double maxImag) {
     double realRange = maxReal - minReal;
     double imagRange = maxImag - minImag;
 
-    double realMargin = realRange * 0.1;
-    double imagMargin = imagRange * 0.1;
+    double realMargin = (realRange == 0) ? 0.1 : realRange * 0.1;
+    double imagMargin = (imagRange == 0) ? 0.1 : imagRange * 0.1;
 
-    if (realMargin == 0) {
-        realMargin = 0.1;
-    }
-    if (imagMargin == 0) {
-        imagMargin = 0.1;
-    }
-
-    chart->createDefaultAxes();
     chart->axes(Qt::Horizontal).back()->setRange(minReal - realMargin, maxReal + realMargin);
     chart->axes(Qt::Vertical).back()->setRange(minImag - imagMargin, maxImag + imagMargin);
     chart->axes(Qt::Horizontal).back()->setTitleText("Real Axis");
     chart->axes(Qt::Vertical).back()->setTitleText("Imaginary Axis");
 }
+
+void Calculator::clearPlot() {
+    if (chart != nullptr) {
+        // Remove all series from the chart
+        QList<QAbstractSeries *> allSeries = chart->series();
+        for (QAbstractSeries *series : allSeries) {
+            chart->removeSeries(series);
+            delete series;
+        }
+
+        chart->setTitle("Cleared");
+        chart->createDefaultAxes();
+        chart->axes(Qt::Horizontal).back()->setTitleText("Real Axis");
+        chart->axes(Qt::Vertical).back()->setTitleText("Imaginary Axis");
+
+        chartView->repaint();
+    }
+}
+
+
 
 /**
  * @brief Make a new Button object remember the function clicked.
@@ -716,9 +684,9 @@ void Calculator::undo() {
         historyIndex--;
         const auto& entry = historyManager.getHistoryEntry(historyIndex);
         if (entry.operation->isUnary()) {
-            updatePlot(entry.operand1, entry.result);
+            updatePlot(entry.operand1, entry.result, entry.operation->serialize());
         } else {
-            updatePlot(entry.operand1, entry.operand2, entry.result);
+            updatePlot(entry.operand1, entry.operand2, entry.result, entry.operation->serialize());
         }
         displayNumber(entry.result);
     }
@@ -731,12 +699,83 @@ void Calculator::redo() {
         historyIndex++;
         const auto& entry = historyManager.getHistoryEntry(historyIndex);
         if (entry.operation->isUnary()) {
-            updatePlot(entry.operand1, entry.result);
+            updatePlot(entry.operand1, entry.result, entry.operation->serialize());
         } else {
-            updatePlot(entry.operand1, entry.operand2, entry.result);
+            updatePlot(entry.operand1, entry.operand2, entry.result, entry.operation->serialize());
         }
 
         displayNumber(entry.result);
     }
+}
 
+
+void Calculator::saveHistory() {
+    QString filePath = QFileDialog::getSaveFileName(this, "Save history", "", "Text file (*.txt)");
+    if (!filePath.isEmpty()) {
+        try {
+            historyManager.saveHistoryToFile(filePath.toStdString());
+        } catch (const std::runtime_error& e) {
+            QMessageBox::critical(this, "Error saving.", e.what());
+        }
+    }
+}
+
+void Calculator::loadHistory() {
+    QString filePath = QFileDialog::getOpenFileName(this, "Load history", "", "Text fuke (*.txt)");
+    if (!filePath.isEmpty()) {
+        try {
+            historyManager.loadHistoryFromFile(filePath.toStdString());
+            historyIndex = historyManager.getHistorySize() - 1;
+
+            if (historyIndex >= 0) {
+                const auto& lastEntry = historyManager.getHistoryEntry(historyIndex);
+                displayNumber(lastEntry.result);
+                if (lastEntry.operation->isUnary()) {
+                    updatePlot(lastEntry.operand1, lastEntry.result, lastEntry.operation->serialize());
+                } else {
+                    updatePlot(lastEntry.operand1, lastEntry.operand2, lastEntry.result, lastEntry.operation->serialize());
+                }
+            }
+        } catch (const std::runtime_error& e) {
+            QMessageBox::critical(this, "Error loading.", e.what());
+        }
+    }
+}
+
+void Calculator::clearHistory() {
+    historyManager.clearHistory();
+    historyIndex = -1;
+    clearDisplay();
+    clearPlot();
+}
+
+void Calculator::showOperand1() {
+    if (historyManager.getHistorySize() > 0 && historyIndex >= 0 && historyIndex < historyManager.getHistorySize()) {
+        const auto& lastEntry = historyManager.getHistoryEntry(historyIndex);
+        displayNumber(lastEntry.operand1);
+    } else {
+        QMessageBox::information(this, "History", "No history to display.");
+    }
+}
+
+void Calculator::showOperand2() {
+    if (historyManager.getHistorySize() > 0 && historyIndex >= 0 && historyIndex < historyManager.getHistorySize()) {
+        const auto& lastEntry = historyManager.getHistoryEntry(historyIndex);
+        if (lastEntry.operation->isUnary()) {
+            QMessageBox::information(this, "Unary Operation", "The second operand is not available for unary operations.");
+        } else {
+            displayNumber(lastEntry.operand2);
+        }
+    } else {
+        QMessageBox::information(this, "History", "No history to display.");
+    }
+}
+
+void Calculator::showResult() {
+    if (historyManager.getHistorySize() > 0 && historyIndex >= 0 && historyIndex < historyManager.getHistorySize()) {
+        const auto& lastEntry = historyManager.getHistoryEntry(historyIndex);
+        displayNumber(lastEntry.result);
+    } else {
+        QMessageBox::information(this, "History", "No history to display.");
+    }
 }

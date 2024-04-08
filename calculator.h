@@ -134,26 +134,6 @@ private slots:
     void conjugate();
 
     /**
-     * @brief Calculates the circle circumference, displays it and plots it.
-     */
-    void calculateCircleCircumference();
-
-    /**
-     * @brief Calculates the circle area, displays it and plots it.
-     */
-    void calculateCircleArea();
-
-    /**
-     * @brief Calculates the triangle circumference, displays it and plots it.
-     */
-    void calculateTriangleCircumference();
-
-    /**
-     * @brief Calculates the triangle area, displays it and plots it.
-     */
-    void calculateTriangleArea();
-
-    /**
      * @brief Sets the calculator to imaginary number mode.
      *
      * Starts inputing imaginary part of the number.
@@ -188,7 +168,7 @@ private slots:
      * @param b second number to be plotted.
      * @param r result number to be plotted.
     */
-    void updatePlot(ComplexNumber a, ComplexNumber b, ComplexNumber r);
+    void updatePlot(const ComplexNumber& a, const ComplexNumber& b, const ComplexNumber& r, const std::string&);
 
     /**
      * @brief Updates the plot for a two-value calculation.
@@ -198,7 +178,22 @@ private slots:
      * @param a first number to be plotted.
      * @param r result number to be plotted.
     */
-    void updatePlot(ComplexNumber a, ComplexNumber r);
+    void updatePlot(const ComplexNumber& a, const ComplexNumber& r, const std::string&);
+
+    /**
+     * @brief Clears the plot.
+     */
+    void clearPlot();
+
+    /**
+     * @brief Adjusts range of plot axis.
+     *
+     * @param minReal lowest real number (x-axis).
+     * @param maxReal highest real number (x-axis).
+     * @param minImag lowest imaginary number (y-axis).
+     * @param maxImag highest imaginary number (y-axis).
+    */
+    void adjustAxes(double minReal, double maxReal, double minImag, double maxImag);
 
     /**
      * @brief Get the currently active display.
@@ -221,8 +216,35 @@ private slots:
      */
     ComplexNumber readNumber();
 
+    /**
+     * @brief Move step back in history.
+     */
     void undo();
+
+    /**
+     * @brief Move step forward in history.
+     */
     void redo();
+
+    /**
+     * @brief Save history to a file..
+     */
+    void saveHistory();
+
+    /**
+     * @brief Read history from a file.
+     */
+    void loadHistory();
+
+    /**
+     * @brief Clears operation history.
+     */
+    void clearHistory();
+
+    void showOperand1();
+    void showOperand2();
+    void showResult();
+
 
 
 private:
