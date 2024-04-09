@@ -7,7 +7,6 @@
 #include <QGridLayout>
 #include "complexnumber.h"
 #include "calcmemory.h"
-#include "shape.h"
 #include "historymanager.h"
 #include "calculatoroperation.h"
 
@@ -241,8 +240,19 @@ private slots:
      */
     void clearHistory();
 
+    /**
+     * @brief Switch showing to operand one when browsing history.
+     */
     void showOperand1();
+
+    /**
+     * @brief Switch showing to operand two when browsing history.
+     */
     void showOperand2();
+
+    /**
+     * @brief Switch showing to result when browsing history.
+     */
     void showResult();
 
 
@@ -330,7 +340,14 @@ private:
      */
     Button *digitButtons[NumDigitButtons];
 
+    /**
+     * @brief HistoryManager object to store ang navigate history.
+     */
     HistoryManager historyManager;
+
+    /**
+     * @brief Index of presently browsed history.
+     */
     int historyIndex = -1;
 };
 #endif

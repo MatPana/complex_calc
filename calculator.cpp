@@ -526,50 +526,6 @@ void Calculator::addToMemory()
  * @param r result number to be plotted.
  */
 void Calculator::updatePlot(const ComplexNumber& a, const ComplexNumber& b, const ComplexNumber& r, const std::string& operationType) {
-    // QScatterSeries *seriesA = new QScatterSeries;
-    // QScatterSeries *seriesB = new QScatterSeries;
-    // QScatterSeries *seriesR = new QScatterSeries;
-    // seriesA->setName("First Value");
-    // seriesB->setName("Second Value");
-    // seriesR->setName("Result");
-
-    // seriesA->append(a.getReal(), a.getImaginary());
-    // seriesB->append(b.getReal(), b.getImaginary());
-    // seriesR->append(r.getReal(), r.getImaginary());
-
-    // chart = new QChart;
-    // chartView = new QChartView(chart);
-    // chart->setTitle(QString::fromStdString(operationType));
-    // mainLayout->addWidget(chartView, 0, 7, 10, 5);
-    // chartView->setMinimumSize(QSize(400, 300));
-    // chart->createDefaultAxes();
-    // chart->addSeries(seriesA);
-    // chart->addSeries(seriesB);
-    // chart->addSeries(seriesR);
-
-    // double minReal = std::min({a.getReal(), b.getReal(), r.getReal()});
-    // double maxReal = std::max({a.getReal(), b.getReal(), r.getReal()});
-    // double minImag = std::min({a.getImaginary(), b.getImaginary(), r.getImaginary()});
-    // double maxImag = std::max({a.getImaginary(), b.getImaginary(), r.getImaginary()});
-
-    // double realRange = maxReal - minReal;
-    // double imagRange = maxImag - minImag;
-
-    // double realMargin = realRange * 0.1;
-    // double imagMargin = imagRange * 0.1;
-
-    // if (realMargin == 0) {
-    //     realMargin = 0.1;
-    // }
-    // if (imagMargin == 0) {
-    //     imagMargin = 0.1;
-    // }
-
-    // chart->createDefaultAxes();
-    // chart->axes(Qt::Horizontal).back()->setRange(minReal - realMargin, maxReal + realMargin);
-    // chart->axes(Qt::Vertical).back()->setRange(minImag - imagMargin, maxImag + imagMargin);
-    // chart->axes(Qt::Horizontal).back()->setTitleText("Real Axis");
-    // chart->axes(Qt::Vertical).back()->setTitleText("Imaginary Axis");
     QScatterSeries *seriesA = new QScatterSeries;
     QScatterSeries *seriesB = new QScatterSeries;
     QScatterSeries *seriesR = new QScatterSeries;
@@ -631,6 +587,14 @@ void Calculator::updatePlot(const ComplexNumber& a, const ComplexNumber& r, cons
     adjustAxes(minReal, maxReal, minImag, maxImag);
 }
 
+/**
+ * @brief Adjust axes to center display and adjust "magnification".
+ *
+ * @param minReal - minimal real value to plot
+ * @param maxReal - maximal real value to plot
+ * @param minImag - minimal imaginary value to plot
+ * @param maxImag - maximal imaginary value to plot
+ */
 void Calculator::adjustAxes(double minReal, double maxReal, double minImag, double maxImag) {
     double realRange = maxReal - minReal;
     double imagRange = maxImag - minImag;
@@ -644,6 +608,9 @@ void Calculator::adjustAxes(double minReal, double maxReal, double minImag, doub
     chart->axes(Qt::Vertical).back()->setTitleText("Imaginary Axis");
 }
 
+/**
+ * @brief Clear plot display.
+ */
 void Calculator::clearPlot() {
     if (chart != nullptr) {
         // Remove all series from the chart
@@ -662,8 +629,6 @@ void Calculator::clearPlot() {
     }
 }
 
-
-
 /**
  * @brief Make a new Button object remember the function clicked.
  *
@@ -679,6 +644,9 @@ Button *Calculator::createButton(const QString &text, const PointerToMemberFunct
     return button;
 }
 
+/**
+ * @brief Revert one step back in history.
+ */
 void Calculator::undo() {
     if (historyIndex > 0) { // There is a history.
         historyIndex--;
@@ -693,6 +661,9 @@ void Calculator::undo() {
 
 }
 
+/**
+ * @brief Move forward one step back in history.
+ */
 void Calculator::redo() {
     int historySize = historyManager.getHistorySize();
     if (historyIndex < historySize - 1) { // There is "future" to move to.
@@ -708,7 +679,9 @@ void Calculator::redo() {
     }
 }
 
-
+/**
+ * @brief Save operation result to file.
+ */
 void Calculator::saveHistory() {
     QString filePath = QFileDialog::getSaveFileName(this, "Save history", "", "Text file (*.txt)");
     if (!filePath.isEmpty()) {
@@ -720,6 +693,9 @@ void Calculator::saveHistory() {
     }
 }
 
+/**
+ * @brief Load history from a file.
+ */
 void Calculator::loadHistory() {
     QString filePath = QFileDialog::getOpenFileName(this, "Load history", "", "Text fuke (*.txt)");
     if (!filePath.isEmpty()) {
@@ -742,6 +718,9 @@ void Calculator::loadHistory() {
     }
 }
 
+/**
+ * @brief Clear calculation history.
+ */
 void Calculator::clearHistory() {
     historyManager.clearHistory();
     historyIndex = -1;
@@ -749,6 +728,9 @@ void Calculator::clearHistory() {
     clearPlot();
 }
 
+/**
+ * @brief Switch showing to operand one when browsing history.
+ */
 void Calculator::showOperand1() {
     if (historyManager.getHistorySize() > 0 && historyIndex >= 0 && historyIndex < historyManager.getHistorySize()) {
         const auto& lastEntry = historyManager.getHistoryEntry(historyIndex);
@@ -758,6 +740,9 @@ void Calculator::showOperand1() {
     }
 }
 
+/**
+ * @brief Switch showing to operand two when browsing history.
+ */
 void Calculator::showOperand2() {
     if (historyManager.getHistorySize() > 0 && historyIndex >= 0 && historyIndex < historyManager.getHistorySize()) {
         const auto& lastEntry = historyManager.getHistoryEntry(historyIndex);
@@ -771,6 +756,9 @@ void Calculator::showOperand2() {
     }
 }
 
+/**
+ * @brief Switch showing to result when browsing history.
+ */
 void Calculator::showResult() {
     if (historyManager.getHistorySize() > 0 && historyIndex >= 0 && historyIndex < historyManager.getHistorySize()) {
         const auto& lastEntry = historyManager.getHistoryEntry(historyIndex);
