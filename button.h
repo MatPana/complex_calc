@@ -4,7 +4,7 @@
 #include <QToolButton>
 
 /**
- * @brief Custom button class inheriting from Qt's QToolButton.
+ * @brief Custom button class for easier creation and connection with functions.
  */
 class Button : public QToolButton
 {
@@ -14,8 +14,8 @@ public:
     /**
    * @brief Constructor for the Button class.
    *
-   * @param text text displayed.
-   * @param parent parent widget.
+   * @param text displayed
+   * @param parent widget
    */
     explicit Button(const QString &text, QWidget *parent = nullptr);
 };

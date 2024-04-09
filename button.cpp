@@ -3,8 +3,8 @@
 /**
  * @brief Constructor for the Button class.
  *
- * @param text displayed on the button (QString).
- * @param parent widget for the button (QWidget*).
+ * @param text displayed
+ * @param parent widget
  */
 Button::Button(const QString &text, QWidget *parent)
     : QToolButton(parent)

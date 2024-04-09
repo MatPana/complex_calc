@@ -13,17 +13,34 @@ ComplexNumber::ComplexNumber() : real(0), imaginary(0) {}
  */
 ComplexNumber::~ComplexNumber() {}
 
-// Template for operations
+/**
+ * @brief Operation on two ComplexNumbes.
+ *
+ * @tparam Operation - operation to do
+ * @param a - first operand
+ * @param b - second operand
+ * @return result of operation
+ */
 template <typename Operation>
 ComplexNumber performOperation(const ComplexNumber& a, const ComplexNumber& b) {
     Operation op;
     return (a.*op)(b);
 }
 
+/**
+ * @brief Sets the real part of the complex number.
+ *
+ * @param value for the real part
+ */
 void ComplexNumber::setReal(double value) {
     this->real = value;
 };
 
+/**
+ * @brief Sets the imaginary part of the complex number.
+ *
+ * @param value for the imaginary part
+ */
 void ComplexNumber::setImaginary(double value) {
     this->imaginary = value;
 };
@@ -75,8 +92,6 @@ ComplexNumber ComplexNumber::divide(const ComplexNumber& other) const {
     return ComplexNumber((real * other.real + imaginary * other.imaginary) / denominator,
                          (imaginary * other.real - real * other.imaginary) / denominator);
 }
-
-
 
 /**
  * @brief Aabsolute value of a complex number.

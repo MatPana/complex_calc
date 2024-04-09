@@ -6,7 +6,14 @@
 #include <stdexcept>
 #include <limits>
 
-
+/**
+ * @brief Adds a new operation to the history.
+ *
+ * @param operation
+ * @param result
+ * @param operand1 - first operand
+ * @param operand2 - second operand (optional)
+ */
 void HistoryManager::addOperation(std::unique_ptr<CalculatorOperation> operation, const ComplexNumber& result, const ComplexNumber& operand1, const ComplexNumber* operand2) {
     // Need to use move, as unique_ptr can't be copied.
     if (operand2) {
@@ -16,6 +23,11 @@ void HistoryManager::addOperation(std::unique_ptr<CalculatorOperation> operation
     }
 }
 
+/**
+ * @brief Serializes the operation history into a string.
+ *
+ * @return std::string - serialized history.
+ */
 std::string HistoryManager::serializeHistory() const {
     std::ostringstream oss;
     // For each element in history.
@@ -37,6 +49,11 @@ std::string HistoryManager::serializeHistory() const {
     return result;
 }
 
+/**
+ * @brief Turns string into parsed history.
+ *
+ * @param serializedHistory - serialized history (string)
+ */
 void HistoryManager::deserializeHistory(const std::string& serializedHistory) {
     std::istringstream stream(serializedHistory);
     std::string entry;
@@ -84,6 +101,12 @@ void HistoryManager::deserializeHistory(const std::string& serializedHistory) {
 }
 
 
+/**
+ * @brief Creates operationt based on its name.
+ *
+ * @param operationName - name of the operation
+ * @return operation object
+ */
 std::unique_ptr<CalculatorOperation> HistoryManager::createOperation(const std::string& operationName) const {
     if (operationName == "AdditionOperation") {
         return std::make_unique<AdditionOperation>();
@@ -107,6 +130,11 @@ std::unique_ptr<CalculatorOperation> HistoryManager::createOperation(const std::
     return nullptr;
 }
 
+/**
+ * @brief Saves history to a file.
+ *
+ * @param filePath - path to the file
+ */
 void HistoryManager::saveHistoryToFile(const std::string& filePath) const {
     std::ofstream outFile(filePath);
     if (!outFile) {
@@ -120,6 +148,11 @@ void HistoryManager::saveHistoryToFile(const std::string& filePath) const {
     }
 }
 
+/**
+ * @brief Reads history from a file.
+ *
+ * @param filePath - path to the file
+ */
 void HistoryManager::loadHistoryFromFile(const std::string& filePath) {
     std::ifstream inFile(filePath);
     if (!inFile) {
@@ -133,6 +166,9 @@ void HistoryManager::loadHistoryFromFile(const std::string& filePath) {
     }
 }
 
+/**
+ * @brief Clears operation history.
+ */
 void HistoryManager::clearHistory() {
     history.clear();
 }

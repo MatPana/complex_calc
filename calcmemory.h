@@ -17,18 +17,18 @@ public:
     CalcMemory();
 
     /**
-   * @brief Default destructor.
-   */
+     * @brief Default destructor.
+     */
     ~CalcMemory();
 
     /**
-   * @brief Reads the currently displayed value.
-   */
+     * @brief Reads the currently displayed value.
+     */
     ComplexNumber readMemory();
 
     /**
-   * @brief Gets last used value.
-   */
+     * @brief Gets last used value.
+     */
     ComplexNumber getLast();
 
     /**
@@ -59,13 +59,13 @@ public:
 
 private:
     /**
-   * @brief Sum of all values stored in memory.
-   */
+     * @brief Sum of all values stored in memory.
+     */
     ComplexNumber sumInMemory = ComplexNumber(0, 0);
 
     /**
-   * @brief Last read value.
-   */
+     * @brief Last read value.
+     */
     ComplexNumber lastValue = ComplexNumber(0, 0);
 };
 

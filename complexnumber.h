@@ -5,12 +5,22 @@
  * @brief Class representing a complex number.
  *
  * This class provides functionalities for creating, manipulating, and performing
- * various operations on complex numbers.
+ * operations on complex numbers.
  */
 class ComplexNumber {
 public:
+    /** @brief Default constructor. */
     ComplexNumber();
+
+    /**
+     * @brief Constructs a ComplexNumber with given real and imaginary values.
+     *
+     * @param a - real part
+     * @param b - imaginary part
+     */
     ComplexNumber(double a, double b);
+
+    /** @brief Default destructor. */
     ~ComplexNumber();
 
     /** @brief The imaginary part of the complex number. */
@@ -19,13 +29,23 @@ public:
     /** @brief The imaginary part of the complex number. */
     double getImaginary() const { return imaginary; }
 
+    /**
+     * @brief Sets the real part of the complex number.
+     *
+     * @param value for the real part
+     */
     void setReal(double);
+    /**
+     * @brief Sets the imaginary part of the complex number.
+     *
+     * @param value for the imaginary part
+     */
     void setImaginary(double);
 
     /**
      * @brief Calculates the absolute value of the complex number.
      *
-     * @return result (double).
+     * @return result (double)
     */
     double absoluteValue() const;
 
@@ -33,7 +53,7 @@ public:
      * @brief Addition of complex numbers.
      *
      * @param other number to be added (const ComplexNumber&).
-     * @return result (ComplexNumber).
+     * @return result (ComplexNumber)
     */
     ComplexNumber add(const ComplexNumber& other) const;
 
